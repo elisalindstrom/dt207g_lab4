@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User"); // Schema + model
+const jwt = require("jsonwebtoken");
 
-// Routes
+/*
 router.get("/", async (req, res) => {
     try {
         let result = await User.find();
@@ -11,7 +12,7 @@ router.get("/", async (req, res) => {
     } catch (error) {
         return res.status(500).json({ message: "Could not get User" });
     }
-})
+}) */
 
 // Registrering
 router.post("/register", async (req, res) => {
@@ -43,7 +44,14 @@ router.post("/login", async (req, res) => {
         const isPasswordMatch = await user.comparePassword(password);
         if (!isPasswordMatch) return res.status(401).json({ error: "Invalid username or password" });
 
-        return res.status(200).json({ message: "User logged in" })
+        const payload = { username: username };
+        const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+        const response = {
+            message: "User logged in",
+            token: token
+        };
+
+        return res.status(200).json({ response });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
