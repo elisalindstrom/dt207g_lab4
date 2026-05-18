@@ -4,6 +4,9 @@ Webbtjänst för registrering och autentisering. Byggt med Express, MongoDB Atla
 ## Installation
 Webbtjänsten använder MongoDB Atlas som databas. Efter klonat repository kör kommando npm install för installation av nödvändiga npm paket. Kör kommando npm run start för att starta server.
 
+## Länk
+Protected route: https://dt207g-lab4.onrender.com/users/protected
+
 ## Användning
 | Metod | Ändpunkt | Beskrivning |
 | ----- | -------- | ----------- |
