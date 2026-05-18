@@ -1,7 +1,19 @@
 const express = require("express");
-const router = express.Router();
-const User = require("../models/User"); // Schema + model
 const jwt = require("jsonwebtoken");
+const User = require("../models/User"); // Schema + model
+const authenticateToken = require("../middleware/authToken"); // Middleware
+
+const router = express.Router();
+
+// Skyddad route
+router.get("/protected", authenticateToken, async (req, res) => {
+    try {
+        let result = await User.find({}, { password: 0 });
+        res.json({ message: "Protected route", result });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+})
 
 // Registrering
 router.post("/register", async (req, res) => {
@@ -20,6 +32,7 @@ router.post("/register", async (req, res) => {
     }
 })
 
+// Inloggning
 router.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body; // Data från request body
@@ -27,17 +40,24 @@ router.post("/login", async (req, res) => {
         // Validering
         if (!username || !password) return res.status(400).json({ message: "Username and password required" });
 
-        const user = await User.findOne({ username });
+        // Kontroll användarnamn
+        let user = await User.findOne({ username: username });
         if (!user) return res.status(401).json({ error: "Invalid username or password" });
 
+        // Kontroll lösenord
         const isPasswordMatch = await user.comparePassword(password);
         if (!isPasswordMatch) return res.status(401).json({ error: "Invalid username or password" });
 
+        // Skapar JWT-token
         const payload = { username: username };
-        const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+        const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '2h' });
+
+        user = await User.findOne({ username: username }, { password: 0 })
+
         const response = {
             message: "User logged in",
-            token: token
+            user,
+            token
         };
 
         return res.status(200).json({ response });
